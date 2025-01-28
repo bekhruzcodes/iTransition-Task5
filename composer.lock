@@ -4,8 +4,55 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "12c4cec5c7ec5a7ae5e55fe2d2010690",
+    "content-hash": "c9eaefe32050574aaddc8d895357d9a4",
     "packages": [
+        {
+            "name": "badcow/lorem-ipsum",
+            "version": "v1.1.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/Badcow/LoremIpsum.git",
+                "reference": "7e685497e92d71d0ebbd067d51892f3308cc72e1"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/Badcow/LoremIpsum/zipball/7e685497e92d71d0ebbd067d51892f3308cc72e1",
+                "reference": "7e685497e92d71d0ebbd067d51892f3308cc72e1",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3.9"
+            },
+            "suggest": {
+                "twig/twig": "Twig is a template language for PHP, released under the new BSD license (code and documentation)."
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Badcow\\LoremIpsum\\": "lib/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Sam Williams",
+                    "email": "sam@badcow.co"
+                },
+                {
+                    "name": "Mathew Tinsley",
+                    "email": "tinsley@tinsology.net"
+                }
+            ],
+            "description": "Lorem ipsum generator.",
+            "support": {
+                "issues": "https://github.com/Badcow/LoremIpsum/issues",
+                "source": "https://github.com/Badcow/LoremIpsum/tree/master"
+            },
+            "time": "2015-04-10T00:15:43+00:00"
+        },
         {
             "name": "composer/semver",
             "version": "3.4.3",
@@ -1622,6 +1669,59 @@
             "time": "2024-12-05T17:15:07+00:00"
         },
         {
+            "name": "nubs/random-name-generator",
+            "version": "v2.2.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/nubs/random-name-generator.git",
+                "reference": "50abf24519badc5795a43c831f1d2a1faa45cb77"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/nubs/random-name-generator/zipball/50abf24519badc5795a43c831f1d2a1faa45cb77",
+                "reference": "50abf24519badc5795a43c831f1d2a1faa45cb77",
+                "shasum": ""
+            },
+            "require": {
+                "php": "~5.6 || ~7.0 || ~8.0"
+            },
+            "require-dev": {
+                "cinam/randomizer": ">=1.1.1,<2.0",
+                "php-coveralls/php-coveralls": "~2.4",
+                "phpunit/phpunit": "^5.0 || ^6.5 || ^7.0 || ^9.0",
+                "squizlabs/php_codesniffer": "~2.3"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Nubs\\RandomNameGenerator\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Spencer Rinehart",
+                    "email": "anubis@overthemonkey.com",
+                    "role": "Developer"
+                }
+            ],
+            "description": "A library to create interesting, sometimes entertaining, random names.",
+            "keywords": [
+                "alliteration",
+                "generator",
+                "random",
+                "video game"
+            ],
+            "support": {
+                "issues": "https://github.com/nubs/random-name-generator/issues",
+                "source": "https://github.com/nubs/random-name-generator/tree/v2.2.0"
+            },
+            "time": "2021-01-12T13:46:08+00:00"
+        },
+        {
             "name": "phpdocumentor/reflection-common",
             "version": "2.2.0",
             "source": {
@@ -2148,6 +2248,57 @@
                 "source": "https://github.com/php-fig/log/tree/3.0.2"
             },
             "time": "2024-09-11T13:17:53+00:00"
+        },
+        {
+            "name": "psr/simple-cache",
+            "version": "3.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/php-fig/simple-cache.git",
+                "reference": "764e0b3939f5ca87cb904f570ef9be2d78a07865"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/php-fig/simple-cache/zipball/764e0b3939f5ca87cb904f570ef9be2d78a07865",
+                "reference": "764e0b3939f5ca87cb904f570ef9be2d78a07865",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=8.0.0"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "3.0.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Psr\\SimpleCache\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "PHP-FIG",
+                    "homepage": "https://www.php-fig.org/"
+                }
+            ],
+            "description": "Common interfaces for simple caching",
+            "keywords": [
+                "cache",
+                "caching",
+                "psr",
+                "psr-16",
+                "simple-cache"
+            ],
+            "support": {
+                "source": "https://github.com/php-fig/simple-cache/tree/3.0.0"
+            },
+            "time": "2021-10-29T13:26:27+00:00"
         },
         {
             "name": "symfony/asset",
@@ -9985,7 +10136,7 @@
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
-        "php": ">=8.2",
+        "php": ">=8.3",
         "ext-ctype": "*",
         "ext-iconv": "*"
     },

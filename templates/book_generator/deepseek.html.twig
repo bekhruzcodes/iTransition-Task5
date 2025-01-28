@@ -1,0 +1,137 @@
+{# templates/book/index.html.twig #}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Book Generator</title>
+    <style>
+        .controls { margin: 20px; padding: 10px; background: #f0f0f0; }
+        .book-table { width: 100%; border-collapse: collapse; }
+        .book-table td, .book-table th { border: 1px solid #ddd; padding: 8px; }
+        .book-row { cursor: pointer; }
+        .details { display: none; padding: 10px; background: #f9f9f9; }
+        .gallery { display: flex; flex-wrap: wrap; gap: 20px; }
+        .card { width: 300px; padding: 10px; border: 1px solid #ddd; }
+        .cover { height: 200px; display: flex; align-items: center; justify-content: center; }
+    </style>
+</head>
+<body>
+<div class="controls">
+    <select id="locale">
+        {% for locale in locales %}
+            <option value="{{ locale }}">{{ locale }}</option>
+        {% endfor %}
+    </select>
+    <input type="number" id="seed" placeholder="Seed">
+    <button onclick="document.getElementById('seed').value = Math.floor(Math.random() * 1000000)">🎲</button>
+    <label>Likes: <input type="range" id="likes" min="0" max="10" step="0.1"></label>
+    <label>Reviews: <input type="number" id="reviews" min="0" step="0.1"></label>
+    <button onclick="toggleView()">Toggle View</button>
+    <button onclick="exportCSV()">Export CSV</button>
+</div>
+
+<div id="content"></div>
+
+<script>
+    let currentPage = 1;
+    let currentParams = {};
+    let isTableView = true;
+
+    function loadBooks(page = 1) {
+        currentPage = page;
+        const params = {
+            locale: document.getElementById('locale').value,
+            seed: document.getElementById('seed').value || 0,
+            likes: document.getElementById('likes').value || 0,
+            reviews: document.getElementById('reviews').value || 0,
+            page: page
+        };
+
+        if (JSON.stringify(params) === JSON.stringify(currentParams) && page === 1) return;
+
+        currentParams = {...params};
+        fetch('/books?' + new URLSearchParams(params))
+            .then(res => res.json())
+            .then(books => {
+                if (page === 1) {
+                    document.getElementById('content').innerHTML = renderBooks(books);
+                } else {
+                    document.getElementById('content').innerHTML += renderBooks(books);
+                }
+            });
+    }
+
+    function renderBooks(books) {
+        if (isTableView) {
+            return `
+                    <table class="book-table">
+                        ${books.map(book => `
+                            <tr class="book-row" onclick="toggleDetails(${book.index})">
+                                <td>${book.index}</td>
+                                <td>${book.isbn}</td>
+                                <td>${book.title}</td>
+                                <td>${book.authors.join(', ')}</td>
+                                <td>${book.publisher}</td>
+                            </tr>
+                            <tr class="details" id="details-${book.index}">
+                                <td colspan="5">
+                                    <div class="cover" style="background: hsl(${book.seed % 360}, 70%, 80%)">
+                                        <h3>${book.title}</h3>
+                                        <p>${book.authors.join(', ')}</p>
+                                    </div>
+                                    ${book.reviews.map(r => `<p>"${r.text}" — ${r.author}</p>`).join('')}
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </table>
+                `;
+        } else {
+            return `
+                    <div class="gallery">
+                        ${books.map(book => `
+                            <div class="card">
+                                <div class="cover" style="background: hsl(${book.seed % 360}, 70%, 80%)">
+                                    <h3>${book.title}</h3>
+                                    <p>${book.authors.join(', ')}</p>
+                                </div>
+                                <p>ISBN: ${book.isbn}</p>
+                                <p>Publisher: ${book.publisher}</p>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+        }
+    }
+
+    function toggleDetails(index) {
+        const details = document.getElementById(`details-${index}`);
+        details.style.display = details.style.display === 'none' ? 'table-row' : 'none';
+    }
+
+    function toggleView() {
+        isTableView = !isTableView;
+        loadBooks(1);
+    }
+
+    function exportCSV() {
+        const params = new URLSearchParams({
+            ...currentParams,
+            pages: Array.from({length: currentPage}, (_, i) => i + 1).join(',')
+        });
+        window.location.href = '/export?' + params;
+    }
+
+    // Event listeners
+    document.querySelectorAll('select, input').forEach(el =>
+        el.addEventListener('change', () => loadBooks(1)));
+
+    window.addEventListener('scroll', () => {
+        if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 100) {
+            loadBooks(currentPage + 1);
+        }
+    });
+
+    // Initial load
+    loadBooks(1);
+</script>
+</body>
+</html>
