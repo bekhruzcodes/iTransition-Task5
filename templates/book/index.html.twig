@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Store Test App</title>
+</head>
+<body>
+<h1>Book Store Test App</h1>
+
+<form method="get" action="{{ path('book_index') }}">
+    <label>
+        Language:
+        <select name="language">
+            <option value="en" {{ language == 'en' ? 'selected' : '' }}>English</option>
+            <option value="de" {{ language == 'de' ? 'selected' : '' }}>German</option>
+            <option value="fr" {{ language == 'fr' ? 'selected' : '' }}>French</option>
+        </select>
+    </label>
+
+    <label>
+        Seed: <input type="number" name="seed" value="{{ seed }}">
+    </label>
+    <label>
+        Likes: <input type="range" name="likes" min="0" max="10" step="0.1" value="{{ likes }}">
+    </label>
+    <label>
+        Reviews: <input type="number" name="reviews" step="0.1" value="{{ reviews }}">
+    </label>
+    <button type="submit">Generate</button>
+</form>
+
+<table border="1">
+    <thead>
+    <tr>
+        <th>Index</th>
+        <th>ISBN</th>
+        <th>Title</th>
+        <th>Author</th>
+        <th>Publisher</th>
+        <th>Likes</th>
+        <th>Reviews</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for book in books %}
+        <tr>
+            <td>{{ book.index }}</td>
+            <td>{{ book.isbn }}</td>
+            <td>{{ book.title }}</td>
+            <td>{{ book.author }}</td>
+            <td>{{ book.publisher }}</td>
+            <td>{{ book.likes }}</td>
+            <td>{{ book.reviews }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+</body>
+</html>

@@ -1,62 +1,67 @@
 <?php
-// src/Service/BookGeneratorService.php
-namespace App\Service;
 
-use Faker\Factory;
+namespace App\Service;
 
 class BookGeneratorService
 {
-    private string $locale = 'en_US';
-    private int $seed = 1;
-    private float $averageLikes = 3.7;
-    private float $averageReviews = 4.7;
+    private array $titles = [
+        'en' => ['The Great Adventure', 'Hidden Secrets', 'Mystery in the Dark', 'Escape to Tomorrow'],
+        'de' => ['Das Große Abenteuer', 'Verborgene Geheimnisse', 'Geheimnis im Dunkeln', 'Flucht in die Zukunft'],
+        'fr' => ['La Grande Aventure', 'Secrets Cachés', 'Mystère dans le Noir', 'Évasion vers Demain'],
+    ];
 
-    public function setLocale(string $locale): self
+    private array $authors = [
+        'en' => ['John Smith', 'Jane Doe', 'Robert Brown', 'Emily White'],
+        'de' => ['Hans Müller', 'Maria Schmidt', 'Peter Klein', 'Anna Schwarz'],
+        'fr' => ['Jean Dupont', 'Marie Curie', 'Jacques Lambert', 'Sophie Leclerc'],
+    ];
+
+    private array $publishers = [
+        'en' => ['Penguin Books', 'HarperCollins', 'Simon & Schuster', 'Macmillan'],
+        'de' => ['Verlagshaus Berlin', 'Suhrkamp Verlag', 'Fischer Taschenbuch', 'Piper Verlag'],
+        'fr' => ['Éditions Gallimard', 'Hachette Livre', 'Flammarion', 'Éditions du Seuil'],
+    ];
+
+    public function generateBooks(string $language, string $region, int $seed, float $likes, float $reviews, int $page): array
     {
-        $this->locale = $locale;
-        return $this;
-    }
-
-    public function setSeed(int $seed): self
-    {
-        $this->seed = $seed;
-        return $this;
-    }
-
-    public function setAverageLikes(float $averageLikes): self
-    {
-        $this->averageLikes = $averageLikes;
-        return $this;
-    }
-
-    public function setAverageReviews(float $averageReviews): self
-    {
-        $this->averageReviews = $averageReviews;
-        return $this;
-    }
-
-    public function generateBooks(int $page): array
-    {
-        $faker = Factory::create($this->locale);
-        $faker->seed($this->seed + $page); // Seed remains compatible
-
+        mt_srand($seed + $page); // Combine seed and page for deterministic results
         $books = [];
-        for ($i = 0; $i < 10; $i++) {
+
+        for ($i = 1; $i <= 20; $i++) {
+            $isbn = $this->generateRandomISBN();
+            $title = $this->getRandomElement($this->titles[$language]);
+            $author = $this->getRandomElement($this->authors[$language]);
+            $publisher = $this->getRandomElement($this->publishers[$language]);
+            $bookLikes = $this->generateFractionalValue($likes);
+            $bookReviews = $this->generateFractionalValue($reviews);
+
             $books[] = [
-                'title' => $faker->sentence(3),
-                'author' => $faker->name,
-                'likes' => $this->generateValueAroundAverage($faker, $this->averageLikes),
-                'reviews' => $this->generateValueAroundAverage($faker, $this->averageReviews),
+                'index' => (($page - 1) * 20) + $i,
+                'isbn' => $isbn,
+                'title' => $title,
+                'author' => $author,
+                'publisher' => $publisher,
+                'likes' => $bookLikes,
+                'reviews' => $bookReviews,
             ];
         }
 
         return $books;
     }
 
-    private function generateValueAroundAverage($faker, float $average): float
+    private function generateRandomISBN(): string
     {
-        $min = max(0, $average - 1.0);
-        $max = $average + 1.0;
-        return $faker->randomFloat(1, $min, $max);
+        return '978-' . mt_rand(1000000000, 9999999999);
+    }
+
+    private function getRandomElement(array $array): string
+    {
+        return $array[array_rand($array)];
+    }
+
+    private function generateFractionalValue(float $average): int
+    {
+        $base = floor($average);
+        return $base + (mt_rand() / mt_getrandmax() < ($average - $base) ? 1 : 0);
     }
 }
