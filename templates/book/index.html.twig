@@ -4,57 +4,394 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Book Store Test App</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #34495e;
+            --accent-color: #3498db;
+            --background-color: #f8f9fa;
+        }
+
+        body {
+            background-color: var(--background-color);
+            padding-bottom: 2rem;
+        }
+
+        .toolbar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: white;
+            z-index: 1000;
+            padding: 1rem;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .toolbar h1 {
+            font-size: 1.5rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        .content {
+            margin-top: 130px;
+            padding: 0 1rem;
+        }
+
+        .controls-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .control-group label {
+            font-weight: 500;
+            color: var(--secondary-color);
+        }
+
+        .table {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+        }
+
+        .table thead {
+            background-color: var(--primary-color);
+        }
+
+        .table thead th {
+            color: white;
+            font-weight: 500;
+            padding: 1rem;
+        }
+
+        .book-row {
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .book-row:hover {
+            background-color: rgba(52, 152, 219, 0.1);
+        }
+
+        .book-details {
+            background-color: #f8f9fa;
+            display: none;
+        }
+
+        .book-details-content {
+            padding: 2rem;
+            display: grid;
+            grid-template-columns: 200px 1fr;
+            gap: 2rem;
+        }
+
+        .book-cover-container {
+            text-align: center;
+        }
+
+        .book-cover {
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .book-info {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .book-title {
+            font-size: 1.5rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        .book-reviews {
+            list-style: none;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .book-reviews li {
+            background: white;
+            padding: 1rem;
+            border-radius: 6px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        .expanded {
+            background-color: rgba(52, 152, 219, 0.05);
+        }
+
+        #loader {
+            text-align: center;
+            padding: 2rem;
+            display: none;
+        }
+
+        .form-range::-webkit-slider-thumb {
+            background: var(--accent-color);
+        }
+
+        .form-select, .form-control {
+            border-color: #dee2e6;
+        }
+
+        .form-select:focus, .form-control:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 0.25rem rgba(52, 152, 219, 0.25);
+        }
+    </style>
 </head>
 <body>
-<h1>Book Store Test App</h1>
+<div class="toolbar">
+    <h1 class="text-center">Book Store Test App</h1>
+    <div class="controls-container">
+        <div class="control-group">
+            <label for="language">Language</label>
+            <select id="language" class="form-select" data-param="language">
+                <option value="en_US" {{ language == 'en_US' ? 'selected' : '' }}>English</option>
+                <option value="de_DE" {{ language == 'de_DE' ? 'selected' : '' }}>German</option>
+                <option value="fr_FR" {{ language == 'fr_FR' ? 'selected' : '' }}>French</option>
+            </select>
+        </div>
 
-<form method="get" action="{{ path('book_index') }}">
-    <label>
-        Language:
-        <select name="language">
-            <option value="en" {{ language == 'en' ? 'selected' : '' }}>English</option>
-            <option value="de" {{ language == 'de' ? 'selected' : '' }}>German</option>
-            <option value="fr" {{ language == 'fr' ? 'selected' : '' }}>French</option>
-        </select>
-    </label>
+        <div class="control-group">
+            <label for="seed">Seed</label>
+            <input type="number" id="seed" class="form-control" value="{{ seed }}" data-param="seed">
+        </div>
 
-    <label>
-        Seed: <input type="number" name="seed" value="{{ seed }}">
-    </label>
-    <label>
-        Likes: <input type="range" name="likes" min="0" max="10" step="0.1" value="{{ likes }}">
-    </label>
-    <label>
-        Reviews: <input type="number" name="reviews" step="0.1" value="{{ reviews }}">
-    </label>
-    <button type="submit">Generate</button>
-</form>
+        <div class="control-group">
+            <label for="likes">Likes</label>
+            <input type="range" id="likes" min="0" max="10" step="0.1" value="{{ likes }}" class="form-range"
+                   data-param="likes">
+            <span id="likes-value">{{ likes }}</span>
+        </div>
 
-<table border="1">
-    <thead>
-    <tr>
-        <th>Index</th>
-        <th>ISBN</th>
-        <th>Title</th>
-        <th>Author</th>
-        <th>Publisher</th>
-        <th>Likes</th>
-        <th>Reviews</th>
-    </tr>
-    </thead>
-    <tbody>
-    {% for book in books %}
+        <div class="control-group">
+            <label for="reviews">Reviews</label>
+            <input type="number" id="reviews" step="0.1" value="{{ reviews }}" class="form-control"
+                   data-param="reviews">
+        </div>
+        <div class="control-group">
+            <label>Export Data</label>
+            <a href="{{ path('book_export', app.request.query.all) }}" class="btn btn-primary form-control d-flex align-items-center justify-content-center gap-2">
+                CSV
+                <i class="bi bi-file-earmark-text"></i>
+            </a>
+
+        </div>
+    </div>
+</div>
+
+<div class="content container-fluid">
+    <table class="table">
+        <thead>
         <tr>
-            <td>{{ book.index }}</td>
-            <td>{{ book.isbn }}</td>
-            <td>{{ book.title }}</td>
-            <td>{{ book.author }}</td>
-            <td>{{ book.publisher }}</td>
-            <td>{{ book.likes }}</td>
-            <td>{{ book.reviews }}</td>
+            <th>Index</th>
+            <th>ISBN</th>
+            <th>Title</th>
+            <th>Author</th>
+            <th>Publisher</th>
+            <th>Likes</th>
+            <th>Reviews</th>
         </tr>
-    {% endfor %}
-    </tbody>
-</table>
+        </thead>
+        <tbody id="book-table-body">
+        {% for book in books %}
+            <tr class="book-row" data-isbn="{{ book.isbn }}" data-title="{{ book.title }}"
+                data-author="{{ book.author }}">
+                <td>{{ book.index }}</td>
+                <td>{{ book.isbn }}</td>
+                <td>{{ book.title }}</td>
+                <td>{{ book.author }}</td>
+                <td>{{ book.publisher }}</td>
+                <td>{{ book.likes }}</td>
+                <td>{{ book.reviews }}</td>
+            </tr>
+            <tr class="book-details">
+                <td colspan="7">
+                    <div class="book-details-content">
+                        <div class="book-cover-container">
+                            <img class="book-cover img-fluid" src="" alt="Book Cover">
+                        </div>
+                        <div class="book-info">
+                            <h2 class="book-title"></h2>
+                            <ul class="book-reviews"></ul>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <div id="loader">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+</div>
+
+<script>
+    const state = {
+        currentParams: {
+            language: '{{ language }}',
+            seed: '{{ seed }}',
+            likes: '{{ likes }}',
+            reviews: '{{ reviews }}',
+            page: 1
+        },
+        isLoading: false
+    };
+
+    function updateURL() {
+        const searchParams = new URLSearchParams(state.currentParams);
+        window.history.pushState({}, '', `${window.location.pathname}?${searchParams}`);
+    }
+
+    async function fetchBooks(params, append = false) {
+        if (state.isLoading) return;
+
+        state.isLoading = true;
+        document.getElementById('loader').style.display = 'block';
+
+        try {
+            const response = await fetch(`/books/json?${new URLSearchParams(params)}`);
+            const data = await response.json();
+
+            const tableBody = document.getElementById('book-table-body');
+            if (!append) tableBody.innerHTML = '';
+
+            const booksHTML = data.books.map(book => `
+                <tr class="book-row" data-isbn="${book.isbn}" data-title="${book.title}" data-author="${book.author}">
+                    <td>${book.index}</td>
+                    <td>${book.isbn}</td>
+                    <td>${book.title}</td>
+                    <td>${book.author}</td>
+                    <td>${book.publisher}</td>
+                    <td>${book.likes}</td>
+                    <td>${book.reviews}</td>
+                </tr>
+                <tr class="book-details">
+                    <td colspan="7">
+                        <div class="book-details-content">
+                            <div class="book-cover-container">
+                                <img class="book-cover img-fluid" src="" alt="Book Cover">
+                            </div>
+                            <div class="book-info">
+                                <h2 class="book-title"></h2>
+                                <ul class="book-reviews"></ul>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+
+            tableBody.insertAdjacentHTML('beforeend', booksHTML);
+            attachBookRowListeners();
+        } catch (error) {
+            console.error('Error fetching books:', error);
+        } finally {
+            state.isLoading = false;
+            document.getElementById('loader').style.display = 'none';
+        }
+    }
+
+    async function toggleBookDetails(row) {
+        const detailsRow = row.nextElementSibling;
+        const isExpanded = row.classList.contains('expanded');
+
+        if (isExpanded) {
+            detailsRow.style.display = 'none';
+            row.classList.remove('expanded');
+            return;
+        }
+
+        document.querySelectorAll('.book-details').forEach(row => row.style.display = 'none');
+        document.querySelectorAll('.book-row').forEach(row => row.classList.remove('expanded'));
+
+        try {
+            const isbn = row.getAttribute('data-isbn');
+            const response = await fetch(`/book-details?isbn=${isbn}&language=${state.currentParams.language}`);
+            const data = await response.json();
+
+            const title = row.getAttribute('data-title');
+            const author = row.getAttribute('data-author');
+
+            const detailsContent = detailsRow.querySelector('.book-details-content');
+            detailsContent.querySelector('.book-title').textContent = `${title} by ${author}`;
+            detailsContent.querySelector('.book-cover').src = data.coverImage;
+
+            const reviewsList = detailsContent.querySelector('.book-reviews');
+            reviewsList.innerHTML = data.reviews.length
+                ? data.reviews.map(review => `<li>${review.reviewer}: ${review.review}</li>`).join('')
+                : '<li>No reviews available.</li>';
+
+            detailsRow.style.display = 'table-row';
+            row.classList.add('expanded');
+        } catch (error) {
+            console.error('Error fetching book details:', error);
+        }
+    }
+
+    function attachBookRowListeners() {
+        document.querySelectorAll('.book-row').forEach(row => {
+            row.addEventListener('click', () => toggleBookDetails(row));
+        });
+    }
+
+    function initializeControls() {
+        document.querySelectorAll('[data-param]').forEach(input => {
+            input.addEventListener('change', async function () {
+                const param = this.getAttribute('data-param');
+                state.currentParams[param] = this.value;
+
+                if (param === 'likes') {
+                    document.getElementById('likes-value').textContent = this.value;
+                }
+
+                state.currentParams.page = 1;
+                updateURL();
+                await fetchBooks(state.currentParams);
+            });
+        });
+
+        document.getElementById('likes').addEventListener('input', function () {
+            document.getElementById('likes-value').textContent = this.value;
+        });
+    }
+
+    function initializeInfiniteScroll() {
+        window.addEventListener('scroll', async () => {
+            if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 200 && !state.isLoading) {
+                state.currentParams.page++;
+                await fetchBooks({...state.currentParams}, true);
+            }
+        });
+    }
+
+    function initialize() {
+        attachBookRowListeners();
+        initializeControls();
+        initializeInfiniteScroll();
+    }
+
+    initialize();
+</script>
 </body>
 </html>

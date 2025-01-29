@@ -2,66 +2,129 @@
 
 namespace App\Service;
 
+use Faker\Factory as FakerFactory;
+use Faker\Generator as FakerGenerator;
+
 class BookGeneratorService
 {
-    private array $titles = [
-        'en' => ['The Great Adventure', 'Hidden Secrets', 'Mystery in the Dark', 'Escape to Tomorrow'],
-        'de' => ['Das Große Abenteuer', 'Verborgene Geheimnisse', 'Geheimnis im Dunkeln', 'Flucht in die Zukunft'],
-        'fr' => ['La Grande Aventure', 'Secrets Cachés', 'Mystère dans le Noir', 'Évasion vers Demain'],
-    ];
+    private FakerGenerator $faker;
+    private BookTitleProvider $titleProvider;
+    private ReviewProvider $reviewProvider;
+    private string $language;
 
-    private array $authors = [
-        'en' => ['John Smith', 'Jane Doe', 'Robert Brown', 'Emily White'],
-        'de' => ['Hans Müller', 'Maria Schmidt', 'Peter Klein', 'Anna Schwarz'],
-        'fr' => ['Jean Dupont', 'Marie Curie', 'Jacques Lambert', 'Sophie Leclerc'],
-    ];
-
-    private array $publishers = [
-        'en' => ['Penguin Books', 'HarperCollins', 'Simon & Schuster', 'Macmillan'],
-        'de' => ['Verlagshaus Berlin', 'Suhrkamp Verlag', 'Fischer Taschenbuch', 'Piper Verlag'],
-        'fr' => ['Éditions Gallimard', 'Hachette Livre', 'Flammarion', 'Éditions du Seuil'],
-    ];
-
-    public function generateBooks(string $language, string $region, int $seed, float $likes, float $reviews, int $page): array
+    public function __construct(string $language = 'en_US')
     {
-        mt_srand($seed + $page); // Combine seed and page for deterministic results
+        $this->language = $language;
+        $this->faker = FakerFactory::create($language);
+        $this->titleProvider = new BookTitleProvider($this->faker);
+        $this->reviewProvider = new ReviewProvider($this->faker);
+        $this->faker->addProvider($this->titleProvider);
+        $this->faker->addProvider($this->reviewProvider);
+    }
+
+    public function generateBooks(int $seed, float $likes, float $reviews, int $page): array
+    {
+        mt_srand($seed + $page);
         $books = [];
 
         for ($i = 1; $i <= 20; $i++) {
+
             $isbn = $this->generateRandomISBN();
-            $title = $this->getRandomElement($this->titles[$language]);
-            $author = $this->getRandomElement($this->authors[$language]);
-            $publisher = $this->getRandomElement($this->publishers[$language]);
+            $titleInfo = $this->titleProvider->bookTitleWithGenre($this->language);
             $bookLikes = $this->generateFractionalValue($likes);
             $bookReviews = $this->generateFractionalValue($reviews);
+            $reviewInfo = $this->reviewProvider->bookReviewWithRating($this->language);
 
             $books[] = [
                 'index' => (($page - 1) * 20) + $i,
                 'isbn' => $isbn,
-                'title' => $title,
-                'author' => $author,
-                'publisher' => $publisher,
+                'title' => $titleInfo['title'],
+                'author' => $this->faker->name,
+                'publisher' => $this->faker->company,
                 'likes' => $bookLikes,
                 'reviews' => $bookReviews,
+                'review' => $reviewInfo['review'],
+                'rating' => min(5, max(1, round($bookLikes / 10))),
+
             ];
         }
 
         return $books;
     }
 
-    private function generateRandomISBN(): string
+    public function generateReviews(string $isbn, int $count): array
     {
-        return '978-' . mt_rand(1000000000, 9999999999);
+        mt_srand(crc32($isbn));
+        $reviews = [];
+
+        for ($i = 0; $i < $count; $i++) {
+            $reviewInfo = $this->reviewProvider->bookReviewWithRating($this->language);
+            $reviewDate = $this->faker->dateTimeBetween('-1 year', 'now');
+
+            $reviews[] = [
+                'reviewer' => $this->generateReviewerName($isbn, $i),
+                'review' => $reviewInfo['review'],
+                'rating' => $reviewInfo['rating'],
+                'verified_purchase' => $reviewInfo['verified_purchase'],
+                'helpful_votes' => $this->faker->numberBetween(0, 100),
+                'date' => $reviewDate->format('Y-m-d'),
+                'country' => $this->getCountryForLocale($this->language)
+            ];
+        }
+
+        return $reviews;
     }
 
-    private function getRandomElement(array $array): string
+    private function generateReviewerName(string $isbn, int $index): string
     {
-        return $array[array_rand($array)];
+        mt_srand(crc32($isbn . $index));
+        return $this->faker->name;
+    }
+
+    private function generateRandomISBN(): string
+    {
+        return sprintf('978-%d-%d-%d-%d',
+            $this->faker->numberBetween(0, 9),
+            $this->faker->numberBetween(100, 999),
+            $this->faker->numberBetween(10000, 99999),
+            $this->faker->numberBetween(0, 9)
+        );
     }
 
     private function generateFractionalValue(float $average): int
     {
         $base = floor($average);
         return $base + (mt_rand() / mt_getrandmax() < ($average - $base) ? 1 : 0);
+    }
+
+    private function getCurrencyForLocale(string $locale): string
+    {
+        $currencyMap = [
+            'en_US' => 'USD',
+            'fr_FR' => 'EUR',
+            'de_DE' => 'EUR',
+            'es_ES' => 'EUR',
+            'default' => 'USD'
+        ];
+
+        return $currencyMap[$locale] ?? $currencyMap['default'];
+    }
+
+    private function getCountryForLocale(string $locale): string
+    {
+        $countryMap = [
+            'en_US' => 'United States',
+            'fr_FR' => 'France',
+            'de_DE' => 'Germany',
+            'es_ES' => 'Spain',
+            'default' => 'United States'
+        ];
+
+        return $countryMap[$locale] ?? $countryMap['default'];
+    }
+
+    public function getLanguage(): string
+    {
+        return $this->language;
     }
 }
